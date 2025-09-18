@@ -1,34 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="https://glitch.com/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="A simple website for demo purposes" />
-    <link rel="stylesheet" type="text/css" href="style.css" />
-</head>
-
-<body>
-    <main>
-    <div class="wrapper"><div class="content">
-    <header>
-        <h1>I'm a website!</h1>
-    </header>
-        <div class="img-container">
-            <img class="illustration" src="tigo-logo.png" alt="CDN" />
-        </div>
-        <div class="instructions">
-            <p>Oh hi! This is a <a href="https://github.com/glitchdotcom/glitchdotcom.github.io">website</a> you can use for demos.</p>
-        </div>
-
-<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <title>Ejemplo Webdialer Webex CC</title>
+  <meta charset="UTF-8">
+  <title>Webex CC Webdialer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    body {
+      font-family: sans-serif;
+    }
     #webex-dialer {
       display: none;
       margin-top: 20px;
@@ -43,6 +22,7 @@
       color: white;
       text-decoration: none;
       border-radius: 4px;
+      cursor: pointer;
     }
     #btnCall:hover {
       background: #0056b3;
@@ -51,12 +31,13 @@
 </head>
 <body>
 
-  <h1>Webex CC Webdialer Test</h1>
-  <a href="#" id="btnCall">Contactar Agente</a>
+  <h1>Webex CC - Web Dialer</h1>
+  <p>Presiona el botón para contactar a un agente de soporte:</p>
+  <a href="#" id="btnCall">📞 Contactar Soporte</a>
 
   <div id="webex-dialer"></div>
 
-  <!-- Incluir el script del widget de Webex -->
+  <!-- Widget de Webex Call -->
   <script src="https://btt.webex.com/call-widget.js"></script>
 
   <script>
@@ -67,42 +48,22 @@
 
       callBtn.addEventListener('click', function (e) {
         e.preventDefault();
-
-        // Mostrar el contenedor del dialer
         dialer.style.display = 'block';
 
         if (!widgetInitialized) {
-          // Inicializar el widget con tus valores
           webexCallWidget.init({
             elementId: 'webex-dialer',
-            orgId: 'e8a35262-0627-40d1-9b31-82b6b9af3653',           // ← Reemplaza con tu Org ID
-            queueId: '9eeb05c1-45c4-4711-83a5-33dc7b9aa693',       // ← Reemplaza con tu Queue ID
-            entryPoint: 'f60c3a17-2842-4cc8-93ce-6ed87bf3fef9',  // ← Reemplaza con tu Entry Point ID
+            orgId: 'e8a35262-0627-40d1-9b31-82b6b9af3653', // Tu Org ID
+            entryPointId: 'f60c3a17-2842-4cc8-93ce-6ed87bf3fef9', // Entry Point ID
             locale: 'es',
-            theme: 'light'
+            theme: 'light',
+            // autoCall: true // Puedes activar esto si quieres llamar automáticamente al abrir
           });
-
           widgetInitialized = true;
-        } else {
-          // Si ya está inicializado, podría intentar llamada automática si el widget lo permite
-          // webexCallWidget.call();  // ← solo si está soportado
         }
       });
     });
   </script>
 
 </body>
-</html>
-
-        
-        
-    <footer class="footer">
-        <div>
-            <a class="remix" target="_blank" href="https://github.com/glitchdotcom/glitchdotcom.github.io">🚧 Fork your own site</a>
-        </div>
-    </footer>
-    </div></div>
-    </main>
-</body>
-
 </html>
