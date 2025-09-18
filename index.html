@@ -21,6 +21,81 @@
         <div class="instructions">
             <p>Oh hi! This is a <a href="https://github.com/glitchdotcom/glitchdotcom.github.io">website</a> you can use for demos.</p>
         </div>
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Ejemplo Webdialer Webex CC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    #webex-dialer {
+      display: none;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 300px;
+    }
+    #btnCall {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    #btnCall:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Webex CC Webdialer Test</h1>
+  <a href="#" id="btnCall">Contactar Agente</a>
+
+  <div id="webex-dialer"></div>
+
+  <!-- Incluir el script del widget de Webex -->
+  <script src="https://btt.webex.com/call-widget.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const callBtn = document.getElementById('btnCall');
+      const dialer = document.getElementById('webex-dialer');
+      let widgetInitialized = false;
+
+      callBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // Mostrar el contenedor del dialer
+        dialer.style.display = 'block';
+
+        if (!widgetInitialized) {
+          // Inicializar el widget con tus valores
+          webexCallWidget.init({
+            elementId: 'webex-dialer',
+            orgId: 'TU_ORG_ID',           // ← Reemplaza con tu Org ID
+            queueId: 'TU_QUEUE_ID',       // ← Reemplaza con tu Queue ID
+            entryPoint: 'TU_ENTRY_POINT_ID',  // ← Reemplaza con tu Entry Point ID
+            locale: 'es',
+            theme: 'light'
+          });
+
+          widgetInitialized = true;
+        } else {
+          // Si ya está inicializado, podría intentar llamada automática si el widget lo permite
+          // webexCallWidget.call();  // ← solo si está soportado
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
+
+        
+        
     <footer class="footer">
         <div>
             <a class="remix" target="_blank" href="https://github.com/glitchdotcom/glitchdotcom.github.io">🚧 Fork your own site</a>
