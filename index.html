@@ -1,117 +1,54 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Click-to-Call Webex Contact Center</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    label, input, button { font-size: 16px; margin-top: 10px; display: block; }
-    #status { margin-top: 20px; font-weight: bold; }
-  </style>
+  <title>Webex Click to Call Test</title>
+  <script src="https://unpkg.com/@webex/calling"></script>
 </head>
 <body>
-  <h1>Click-to-Call con Webex Contact Center</h1>
-
-  <label for="guestName">Tu nombre:</label>
-  <input type="text" id="guestName" placeholder="Ingresa tu nombre" />
-
-  <button id="callBtn">Llamar ahora</button>
-
-  <div id="status"></div>
-
-  <!-- SDK Webex -->
-  <script src="https://binaries.webex.com/WxCCWidgets/guest-widgets.min.js"></script>
+  <button id="callBtn">Llamar</button>
 
   <script>
-    const callBtn = document.getElementById('callBtn');
-    const guestNameInput = document.getElementById('guestName');
-    const statusDiv = document.getElementById('status');
+    const jweToken = "YjZmODBmZGUtMGYyYi00NzIzLTk5ZGMtZWYwMjBjNmZjZDU1YmRlZjg3ZTgtODI3_PF84_e8a35262-0627-40d1-9b31-82b6b9af3653"; // quémalo directo por ahora
 
-    // Configuración de Webex - debes cambiar TU_ORG_ID por tu ID real
-    const webexConfig = {
-      orgId: 'e8a35262-0627-40d1-9b31-82b6b9af3653'
-    };
+    async function initCall() {
+      const webexConfig = { 
+        config: {}, 
+        credentials: { access_token: jweToken }
+      };
 
-    let call; // variable global para la llamada
+      const callingClientConfig = {
+        serviceData: {
+          indicator: `guestcalling`,
+          guestName: `Invitado`
+        },
+        jwe: jweToken,
+      };
 
-    callBtn.addEventListener('click', async () => {
-      const guestName = guestNameInput.value.trim();
-      if (!guestName) {
-        alert("Por favor ingresa tu nombre");
-        return;
-      }
+      const callingConfig = {
+        callingClientConfig,
+      };
 
-      statusDiv.textContent = 'Obteniendo token para la llamada...';
+      const calling = await Calling.init({ webexConfig, callingConfig });
 
-      try {
-        // Llama a tu backend para obtener el token JWE (cambia la URL a la correcta)
-        const response = await fetch('http://localhost:3000/api/jwe-token');
-        const data = await response.json();
-        const jweToken = data.token;
+      calling.on("ready", async () => {
+        await calling.register();
+        const callingClient = calling.callingClient;
+        const line = Object.values(callingClient.getLines())[0];
 
-        if (!jweToken) throw new Error("No se obtuvo token JWE");
+        line.on('registered', async () => {
+          // Creamos el stream de audio local
+          const localAudioStream = await Calling.createMicrophoneStream({ audio: true });
 
-        statusDiv.textContent = "Inicializando llamada...";
-
-        // Configuración para el cliente de llamada
-        const callingClientConfig = {
-          logger: { level: 'INFO' },
-          serviceData: {
-            indicator: 'guestcalling',
-            guestName: guestName
-          },
-          jwe: jweToken
-        };
-
-        const clientConfig = {};
-
-        const callingConfig = {
-          clientConfig,
-          callingClientConfig,
-          logger: { level: 'INFO' }
-        };
-
-        // Inicializar el SDK de llamada
-        const calling = await Calling.init({ webexConfig, callingConfig });
-
-        calling.on('ready', async () => {
-          statusDiv.textContent = 'Registrando línea...';
-
-          await calling.register();
-
-          const callingClient = calling.callingClient;
-          const lines = callingClient.getLines();
-          const line = Object.values(lines)[0];
-
-          line.on('registered', async () => {
-            statusDiv.textContent = 'Línea registrada, iniciando llamada...';
-
-            const localAudioStream = await Calling.createMicrophoneStream({ audio: true });
-
-            call = line.makeCall();
-
-            call.on('connected', () => {
-              statusDiv.textContent = '📞 Llamada conectada';
-            });
-
-            call.on('disconnected', () => {
-              statusDiv.textContent = '📴 Llamada finalizada';
-            });
-
-            call.on('failed', () => {
-              statusDiv.textContent = '❌ Llamada fallida';
-            });
-
-            call.dial({ localAudioStream });
-          });
-
-          await line.register();
+          // Creamos la llamada (click-to-call => sin parámetros en makeCall)
+          const call = line.makeCall();
+          call.dial({ localAudioStream });
         });
-      } catch (error) {
-        console.error(error);
-        statusDiv.textContent = 'Error: ' + error.message;
-      }
-    });
+
+        line.register();
+      });
+    }
+
+    document.getElementById("callBtn").addEventListener("click", initCall);
   </script>
 </body>
-</html>
+</html> 
