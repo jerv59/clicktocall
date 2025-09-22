@@ -1,45 +1,78 @@
-<script src="https://unpkg.com/webex/umd/webex.min.js"></script>
-<script>
-  async function initCall() {
-    const webexConfig = {
-      credentials: {
-        access_token: "ZWM4YzIzMTgtOWYxZS00MzdhLTljNjctNjNkYTE2MzgwOTcxZGU1YjhkYjQtNTgz_PF84_e8a35262-0627-40d1-9b31-82b6b9af3653"
+// Formulario HTML simple:
+
+<form id="call-form">
+  <label for="guestId">Identificación:</label>
+  <input type="text" id="guestId" name="guestId" required />
+  <button type="submit">Llamar a un agente</button>
+</form>
+
+
+// JS para enviar el guestId al Worker y hacer la llamada:
+
+document.getElementById("call-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const guestId = document.getElementById("guestId").value.trim();
+  if (!guestId) {
+    alert("Por favor ingresa tu identificación.");
+    return;
+  }
+
+  try {
+    // 1. Solicitar el Guest Token (JWE) desde el backend
+    const resp = await fetch("https://wccx-guest-token.jhon-romero.workers.dev", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
       },
-      config: {
-        logger: {
-          level: "debug"   // 👈 obligatorio, evita el error
-        }
-      }
+      body: JSON.stringify({
+        guestId: guestId,
+        name: `Cliente ${guestId}`  // opcional
+      })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) {
+      console.error(data);
+      alert("Error al generar el token de llamada.");
+      return;
+    }
+
+    const jwe = data.guestToken;
+
+    // 2. Inicializar Webex Calling SDK con el JWE
+    const callingClientConfig = {
+      logger: {},
+      serviceData: {
+        indicator: "guestcalling",
+        guestName: `Cliente ${guestId}`
+      },
+      jwe: jwe
     };
 
     const callingConfig = {
-      clientConfig: { calling: true },
-      logger: {
-        level: "info"      // 👈 obligatorio, evita el error
-      }
+      clientConfig: {},
+      callingClientConfig,
+      logger: {}
     };
 
-    const calling = await Calling.init({ webexConfig, callingConfig });
+    const calling = await window.WebexCalling.Calling.init({ webexConfig: {}, callingConfig });
+    await calling.register();
 
-    calling.on("ready", async () => {
-      await calling.register();
+    const line = Object.values(calling.callingClient.getLines())[0];
+    line.on('registered', async () => {
+      const call = line.makeCall({ destination: "+5712345678" });  // tu número de cola
+      const audio = await window.WebexCalling.Calling.createMicrophoneStream({ audio: true });
+      call.dial({ localAudioStream: audio });
 
-      const line = Object.values(calling.callingClient.getLines())[0];
-      const localAudioStream = await Calling.createMicrophoneStream({ audio: true });
-
-      const call = line.makeCall({
-        type: "uri",
-        address: "+576046098737" // número o URI válido
-      });
-
-      await call.dial(localAudioStream);
-
-      call.on("remote_media", (track) => {
-        document.getElementById("remote-audio").srcObject = new MediaStream([track]);
-      });
+      call.on("connected", () => console.log("Llamada conectada"));
+      call.on("disconnected", () => console.log("Llamada finalizada"));
+      call.on("error", (err) => console.error("Error en la llamada:", err));
     });
-  }
-</script>
+    await line.register();
 
-<button onclick="initCall()">Llamar</button>
-<audio id="remote-audio" autoplay></audio> 
+  } catch (err) {
+    console.error("Fallo al iniciar la llamada:", err);
+    alert("No se pudo realizar la llamada.");
+  }
+});
