@@ -29,7 +29,7 @@
 
       try {
         // 1. Solicitar el Guest Token (JWE) desde el backend (Cloudflare Worker)
-        const resp = await fetch("https://tu-worker.ejemplo.workers.dev/guest-token", {
+        const resp = await fetch("https://wccx-guest-token.jhon-romero.workers.dev", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -70,7 +70,7 @@
 
         const line = Object.values(calling.callingClient.getLines())[0];
         line.on('registered', async () => {
-          const call = line.makeCall({ destination: "+5712345678" });  // ⚠️ Reemplaza con tu Entry Point
+          const call = line.makeCall({ destination: "+576046098730" });  // ⚠️ Reemplaza con tu Entry Point
 
           const audio = await window.WebexCC.Calling.createMicrophoneStream({ audio: true });
           call.dial({ localAudioStream: audio });
